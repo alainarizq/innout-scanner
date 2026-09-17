@@ -73,55 +73,122 @@
 
   <script>
 
-    let alreadyScanned = false;
+  // MASUKKAN URL WEB APP APPS SCRIPT KAMU DI SINI
+  const API_URL = "https://script.google.com/macros/s/AKfycbyU7WOE6Vk0x0cgIfylBhCt8UQS8hAzbKIRYO90q-g_lMq6JhsROPp_lTLnFYC62V7h/exec";
 
 
-    function onScanSuccess(decodedText, decodedResult) {
+  let isProcessing = false;
 
-      if (alreadyScanned) {
-        return;
-      }
 
-      alreadyScanned = true;
+  function processCheckIn(memberId) {
 
-      console.log("QR terbaca:", decodedText);
+    if (isProcessing) {
+      return;
+    }
+
+    isProcessing = true;
+
+    document.getElementById("result").innerText =
+      "Memproses " + memberId + "...";
+
+
+    // Membuat nama callback unik
+    const callbackName =
+      "checkInCallback_" + Date.now();
+
+
+    // Membuat fungsi callback sementara
+    window[callbackName] = function(response) {
 
       document.getElementById("result").innerText =
-        "QR TERBACA: " + decodedText;
+        response.message;
 
 
+      // Hapus fungsi callback setelah selesai
+      delete window[callbackName];
+
+
+      // Izinkan scan berikutnya setelah 3 detik
       setTimeout(function() {
-        alreadyScanned = false;
+        isProcessing = false;
       }, 3000);
 
+    };
+
+
+    // Membuat URL request
+    const url =
+      API_URL +
+      "?api=checkin" +
+      "&memberId=" + encodeURIComponent(memberId) +
+      "&callback=" + callbackName;
+
+
+    // Kirim request ke Apps Script
+    const script = document.createElement("script");
+
+    script.src = url;
+
+    document.body.appendChild(script);
+
+
+    // Hapus script setelah request
+    setTimeout(function() {
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+    }, 5000);
+
+  }
+
+
+  function onScanSuccess(decodedText, decodedResult) {
+
+    if (isProcessing) {
+      return;
     }
 
+    console.log("QR terbaca:", decodedText);
 
-    function onScanFailure(error) {
-      // Tidak perlu melakukan apa-apa.
-      // Scanner akan terus mencoba membaca QR.
-    }
+    processCheckIn(decodedText);
 
-
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: {
-          width: 250,
-          height: 250
-        }
-      },
-      false
-    );
+  }
 
 
-    scanner.render(
-      onScanSuccess,
-      onScanFailure
-    );
+  function onScanFailure(error) {
 
-  </script>
+    // Scanner akan terus mencoba membaca QR.
+    // Tidak perlu menampilkan error.
+
+  }
+
+
+  const scanner = new Html5QrcodeScanner(
+
+    "reader",
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+
+    false
+
+  );
+
+
+  scanner.render(
+    onScanSuccess,
+    onScanFailure
+  );
+
+</script>
 
 </body>
 </html>
