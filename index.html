@@ -107,31 +107,133 @@
 
 
     // Callback dari Apps Script
-    window[callbackName] = function(response) {
+  window[callbackName] = function(response) {
 
-      if (finished) {
-        return;
-      }
+  if (finished) {
+    return;
+  }
 
-      finished = true;
-
-
-      if (response.success) {
-
-        showResult(
-          "✅ " + response.message
-        );
-
-      } else {
-
-        showResult(
-          "❌ " + response.message
-        );
-
-      }
+  finished = true;
 
 
-      cleanup();
+  if (response.success) {
+
+    document.getElementById("result").innerHTML = `
+
+      <div style="
+        text-align:center;
+        line-height:1.6;
+      ">
+
+        <div style="
+          font-size:28px;
+          margin-bottom:10px;
+        ">
+          ✅
+        </div>
+
+        <div style="
+          font-size:22px;
+          font-weight:bold;
+          margin-bottom:15px;
+        ">
+          CHECK-IN BERHASIL
+        </div>
+
+        <div>
+          <strong>${response.nama}</strong>
+        </div>
+
+        <div>
+          ${response.memberId}
+        </div>
+
+        <br>
+
+        <div>
+          Paket: ${response.paket}
+        </div>
+
+        <div>
+          Aktif sampai: ${response.tanggalExpired}
+        </div>
+
+      </div>
+
+    `;
+
+  } else {
+
+    document.getElementById("result").innerHTML = `
+
+      <div style="
+        text-align:center;
+        line-height:1.6;
+      ">
+
+        <div style="
+          font-size:28px;
+          margin-bottom:10px;
+        ">
+          ❌
+        </div>
+
+        <div style="
+          font-size:22px;
+          font-weight:bold;
+          margin-bottom:15px;
+        ">
+          ${response.message}
+        </div>
+
+        ${
+          response.nama
+          ?
+          `
+          <div>
+            <strong>${response.nama}</strong>
+          </div>
+
+          <div>
+            ${response.memberId}
+          </div>
+
+          <br>
+
+          <div>
+            Expired:
+            ${response.tanggalExpired}
+          </div>
+          `
+          :
+          `
+          <div>
+            Periksa kembali Member ID.
+          </div>
+          `
+        }
+
+      </div>
+
+    `;
+
+  }
+
+
+  cleanup();
+
+
+  setTimeout(function() {
+
+    isProcessing = false;
+
+    showResult(
+      "Arahkan QR Member ke kamera"
+    );
+
+  }, 3000);
+
+};
 
 
       // Bisa scan lagi setelah 2 detik
