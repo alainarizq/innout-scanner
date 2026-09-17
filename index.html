@@ -73,7 +73,7 @@
 
   <script>
 
-  const API_URL = "https://script.google.com/macros/s/AKfycbzt34FfeI1QZnvPdQPnZ78vyrm0ba0uBR9jLJVvYC0/dev";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyU7WOE6Vk0x0cgIfylBhCt8UQS8hAzbKIRYO90q-g_lMq6JhsROPp_lTLnFYC62V7h/exec";
 
   let isProcessing = false;
   let currentScript = null;
@@ -81,7 +81,7 @@
 
   function showResult(message) {
 
-    document.getElementById("result").innerText = message;
+    document.getElementById("result").innerHTML = message;
 
   }
 
@@ -102,141 +102,124 @@
     const callbackName =
       "checkInCallback_" + Date.now();
 
-
     let finished = false;
 
 
-    // Callback dari Apps Script
-  window[callbackName] = function(response) {
+    window[callbackName] = function(response) {
 
-  if (finished) {
-    return;
-  }
+      if (finished) {
+        return;
+      }
 
-  finished = true;
+      finished = true;
 
 
-  if (response.success) {
+      if (response.success) {
 
-    document.getElementById("result").innerHTML = `
+        document.getElementById("result").innerHTML = `
 
-      <div style="
-        text-align:center;
-        line-height:1.6;
-      ">
+          <div style="
+            text-align:center;
+            line-height:1.6;
+          ">
 
-        <div style="
-          font-size:28px;
-          margin-bottom:10px;
-        ">
-          ✅
-        </div>
+            <div style="
+              font-size:28px;
+              margin-bottom:10px;
+            ">
+              ✅
+            </div>
 
-        <div style="
-          font-size:22px;
-          font-weight:bold;
-          margin-bottom:15px;
-        ">
-          CHECK-IN BERHASIL
-        </div>
+            <div style="
+              font-size:22px;
+              font-weight:bold;
+              margin-bottom:15px;
+            ">
+              CHECK-IN BERHASIL
+            </div>
 
-        <div>
-          <strong>${response.nama}</strong>
-        </div>
+            <div>
+              <strong>${response.nama}</strong>
+            </div>
 
-        <div>
-          ${response.memberId}
-        </div>
+            <div>
+              ${response.memberId}
+            </div>
 
-        <br>
+            <br>
 
-        <div>
-          Paket: ${response.paket}
-        </div>
+            <div>
+              Paket: ${response.paket}
+            </div>
 
-        <div>
-          Aktif sampai: ${response.tanggalExpired}
-        </div>
+            <div>
+              Aktif sampai: ${response.tanggalExpired}
+            </div>
 
-      </div>
-
-    `;
-
-  } else {
-
-    document.getElementById("result").innerHTML = `
-
-      <div style="
-        text-align:center;
-        line-height:1.6;
-      ">
-
-        <div style="
-          font-size:28px;
-          margin-bottom:10px;
-        ">
-          ❌
-        </div>
-
-        <div style="
-          font-size:22px;
-          font-weight:bold;
-          margin-bottom:15px;
-        ">
-          ${response.message}
-        </div>
-
-        ${
-          response.nama
-          ?
-          `
-          <div>
-            <strong>${response.nama}</strong>
           </div>
 
-          <div>
-            ${response.memberId}
+        `;
+
+      } else {
+
+        document.getElementById("result").innerHTML = `
+
+          <div style="
+            text-align:center;
+            line-height:1.6;
+          ">
+
+            <div style="
+              font-size:28px;
+              margin-bottom:10px;
+            ">
+              ❌
+            </div>
+
+            <div style="
+              font-size:22px;
+              font-weight:bold;
+              margin-bottom:15px;
+            ">
+              ${response.message}
+            </div>
+
+            ${
+              response.nama
+              ?
+              `
+                <div>
+                  <strong>${response.nama}</strong>
+                </div>
+
+                <div>
+                  ${response.memberId}
+                </div>
+
+                <br>
+
+                <div>
+                  Expired: ${response.tanggalExpired}
+                </div>
+              `
+              :
+              `
+                <div>
+                  Periksa kembali Member ID.
+                </div>
+              `
+            }
+
           </div>
 
-          <br>
+        `;
 
-          <div>
-            Expired:
-            ${response.tanggalExpired}
-          </div>
-          `
-          :
-          `
-          <div>
-            Periksa kembali Member ID.
-          </div>
-          `
-        }
-
-      </div>
-
-    `;
-
-  }
+      }
 
 
-  cleanup();
+      cleanup();
 
 
-  setTimeout(function() {
-
-    isProcessing = false;
-
-    showResult(
-      "Arahkan QR Member ke kamera"
-    );
-
-  }, 3000);
-
-};
-
-
-      // Bisa scan lagi setelah 2 detik
       setTimeout(function() {
 
         isProcessing = false;
@@ -245,7 +228,7 @@
           "Arahkan QR Member ke kamera"
         );
 
-      }, 2500);
+      }, 3000);
 
     };
 
@@ -290,9 +273,11 @@
 
       finished = true;
 
+
       showResult(
         "⚠️ Gagal menghubungi server"
       );
+
 
       cleanup();
 
@@ -313,7 +298,6 @@
     document.body.appendChild(currentScript);
 
 
-    // Timeout 15 detik
     setTimeout(function() {
 
       if (finished) {
@@ -322,9 +306,11 @@
 
       finished = true;
 
+
       showResult(
         "⚠️ Server terlalu lama merespons"
       );
+
 
       cleanup();
 
@@ -364,7 +350,8 @@
 
   function onScanFailure(error) {
 
-    // Abaikan error ketika QR belum terbaca.
+    // Tidak melakukan apa-apa
+    // selama QR belum terbaca.
 
   }
 
