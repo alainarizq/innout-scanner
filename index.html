@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>INNOUT FITNESS - Check In</title>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <style>
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    #reader {
+      width: 100%;
+      margin: auto;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      min-height: 25px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>INNOUT FITNESS</h1>
+
+    <div class="subtitle">
+      Member Check-In
+    </div>
+
+    <div id="reader"></div>
+
+    <div id="result">
+      Arahkan QR Member ke kamera
+    </div>
+
+  </div>
+
+
+  <script>
+
+    let alreadyScanned = false;
+
+
+    function onScanSuccess(decodedText, decodedResult) {
+
+      if (alreadyScanned) {
+        return;
+      }
+
+      alreadyScanned = true;
+
+      console.log("QR terbaca:", decodedText);
+
+      document.getElementById("result").innerText =
+        "QR TERBACA: " + decodedText;
+
+
+      setTimeout(function() {
+        alreadyScanned = false;
+      }, 3000);
+
+    }
+
+
+    function onScanFailure(error) {
+      // Tidak perlu melakukan apa-apa.
+      // Scanner akan terus mencoba membaca QR.
+    }
+
+
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      {
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250
+        }
+      },
+      false
+    );
+
+
+    scanner.render(
+      onScanSuccess,
+      onScanFailure
+    );
+
+  </script>
+
+</body>
+</html>
