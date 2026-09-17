@@ -73,11 +73,17 @@
 
   <script>
 
-  // MASUKKAN URL WEB APP APPS SCRIPT KAMU DI SINI
   const API_URL = "https://script.google.com/macros/s/AKfycbyU7WOE6Vk0x0cgIfylBhCt8UQS8hAzbKIRYO90q-g_lMq6JhsROPp_lTLnFYC62V7h/exec";
 
-
   let isProcessing = false;
+  let currentScript = null;
+
+
+  function showResult(message) {
+
+    document.getElementById("result").innerText = message;
+
+  }
 
 
   function processCheckIn(memberId) {
@@ -88,58 +94,150 @@
 
     isProcessing = true;
 
-    document.getElementById("result").innerText =
-      "Memproses " + memberId + "...";
+    showResult(
+      "⏳ Memverifikasi " + memberId + "..."
+    );
 
 
-    // Membuat nama callback unik
     const callbackName =
       "checkInCallback_" + Date.now();
 
 
-    // Membuat fungsi callback sementara
+    let finished = false;
+
+
+    // Callback dari Apps Script
     window[callbackName] = function(response) {
 
-      document.getElementById("result").innerText =
-        response.message;
+      if (finished) {
+        return;
+      }
+
+      finished = true;
 
 
-      // Hapus fungsi callback setelah selesai
-      delete window[callbackName];
+      if (response.success) {
+
+        showResult(
+          "✅ " + response.message
+        );
+
+      } else {
+
+        showResult(
+          "❌ " + response.message
+        );
+
+      }
 
 
-      // Izinkan scan berikutnya setelah 3 detik
+      cleanup();
+
+
+      // Bisa scan lagi setelah 2 detik
       setTimeout(function() {
+
         isProcessing = false;
-      }, 3000);
+
+        showResult(
+          "Arahkan QR Member ke kamera"
+        );
+
+      }, 2500);
 
     };
 
 
-    // Membuat URL request
+    function cleanup() {
+
+      delete window[callbackName];
+
+
+      if (currentScript) {
+
+        currentScript.remove();
+
+        currentScript = null;
+
+      }
+
+    }
+
+
     const url =
       API_URL +
       "?api=checkin" +
-      "&memberId=" + encodeURIComponent(memberId) +
-      "&callback=" + callbackName;
+      "&memberId=" +
+      encodeURIComponent(memberId) +
+      "&callback=" +
+      callbackName;
 
 
-    // Kirim request ke Apps Script
-    const script = document.createElement("script");
-
-    script.src = url;
-
-    document.body.appendChild(script);
+    currentScript =
+      document.createElement("script");
 
 
-    // Hapus script setelah request
-    setTimeout(function() {
+    currentScript.src = url;
 
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+
+    currentScript.onerror = function() {
+
+      if (finished) {
+        return;
       }
 
-    }, 5000);
+      finished = true;
+
+      showResult(
+        "⚠️ Gagal menghubungi server"
+      );
+
+      cleanup();
+
+
+      setTimeout(function() {
+
+        isProcessing = false;
+
+        showResult(
+          "Arahkan QR Member ke kamera"
+        );
+
+      }, 2500);
+
+    };
+
+
+    document.body.appendChild(currentScript);
+
+
+    // Timeout 15 detik
+    setTimeout(function() {
+
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+
+      showResult(
+        "⚠️ Server terlalu lama merespons"
+      );
+
+      cleanup();
+
+
+      setTimeout(function() {
+
+        isProcessing = false;
+
+        showResult(
+          "Arahkan QR Member ke kamera"
+        );
+
+      }, 2500);
+
+    }, 15000);
 
   }
 
@@ -150,7 +248,12 @@
       return;
     }
 
-    console.log("QR terbaca:", decodedText);
+
+    console.log(
+      "QR terbaca:",
+      decodedText
+    );
+
 
     processCheckIn(decodedText);
 
@@ -159,28 +262,28 @@
 
   function onScanFailure(error) {
 
-    // Scanner akan terus mencoba membaca QR.
-    // Tidak perlu menampilkan error.
+    // Abaikan error ketika QR belum terbaca.
 
   }
 
 
-  const scanner = new Html5QrcodeScanner(
+  const scanner =
+    new Html5QrcodeScanner(
 
-    "reader",
+      "reader",
 
-    {
-      fps: 10,
+      {
+        fps: 10,
 
-      qrbox: {
-        width: 250,
-        height: 250
-      }
-    },
+        qrbox: {
+          width: 250,
+          height: 250
+        }
+      },
 
-    false
+      false
 
-  );
+    );
 
 
   scanner.render(
